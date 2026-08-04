@@ -102,3 +102,6 @@ fi
 echo "Time: $(date).---------------------------------" >> /etc/DOAZLAB/VersionLog
 echo "Time: $(date).END VERSION CHECKS" >> /etc/DOAZLAB/VersionLog
 echo "Time: $(date).---------------------------------" >> /etc/DOAZLAB/VersionLog
+
+
+cat /etc/DOAZLAB/VersionLog

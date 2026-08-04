@@ -225,3 +225,6 @@ install_pipx() {
 echo "Time: $(date).---Install Pipx" >> /etc/DOAZLAB/DOAZLABLog
 install_pipx
 
+
+echo "Time: $(date).---Kickoff Version Check.  Check file /etc/DOAZLAB/VersionLog" >> /etc/DOAZLAB/DOAZLABLog
+/bin/bash /etc/DOAZLAB/CheckTools.sh
