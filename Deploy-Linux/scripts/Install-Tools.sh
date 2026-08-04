@@ -2,33 +2,81 @@
 
 #!/bin/bash
 
+# Create Log File and Directory if it doesnt exist.
+mkdir -p /etc/DOAZLAB && touch /etc/DOAZLAB/DOAZLABLog
+
 # Check if user is root
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root" 1>&2
     exit 1
 fi
 
+echo "Time: $(date). Kickoff Tool Installs" >> /etc/DOAZLAB/DOAZLABLog
 # apt packages
+echo "Time: $(date). ---APT PACAKGES---" >> /etc/DOAZLAB/DOAZLABLog
+
 # apt-get update -y && apt-get full-upgrade -y
 apt-get update -y
-apt-get install python3 -y
+echo "Time: $(date). ---APT: python3 Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install python3 -y 
+echo "Time: $(date). ---APT: virtualenv Install ---" >> /etc/DOAZLAB/DOAZLABLog
 apt-get install virtualenv -y
+echo "Time: $(date). ---APT: python3 tools, dev, build-essentials, smbclient Install ---" >> /etc/DOAZLAB/DOAZLABLog
 apt-get install python3-distutils python3-virtualenv libssl-dev libffi-dev python-dev-is-python3 build-essential smbclient libpcap-dev apt-transport-https -y
-# TODO: pretty sure some of these are not getting installed. Need to investigate
-apt-get install vim-nox htop ncat rlwrap golang jq feroxbuster silversearcher-ag testssl.sh nmap masscan proxychains4 -y
-apt-get install python3.11-venv -y
-apt-get install golang-go -y
+echo "Time: $(date). ---APT: proxychains4 ---" >> /etc/DOAZLAB/DOAZLABLog
 apt-get install proxychains4 -y
+echo "Time: $(date). ---APT: nmap Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install nmap -y
+echo "Time: $(date). ---APT: net-tools Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install net-tools -y
+echo "Time: $(date). ---APT: golang  Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install golang -y
+echo "Time: $(date). ---APT: golang-go  Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install golang-go -y
+# TODO: pretty sure some of these are not getting installed. Need to investigate
+echo "Time: $(date). ---APT: vim-nox htop ncat rlwrap  Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install vim-nox htop ncat rlwrap -y
+echo "Time: $(date). ---APT: jq feroxbuster silversearcher-ag testssl.sh nmap masscan proxychains4  Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install jq silversearcher-ag testssl.sh nmap masscan  -y
+echo "Time: $(date). ---APT: onesixtyone snmp-mibs-downloader Install ---" >> /etc/DOAZLAB/DOAZLABLog
 apt-get install onesixtyone snmp-mibs-downloader -y
-apt-get install net-tools
-apt-get install zsh
-# Install latest metasploit
-gem install bundler
-apt-get install metasploit-framework -y
-
+echo "Time: $(date). ---APT: net-tool, zsh Install ---" >> /etc/DOAZLAB/DOAZLABLog
+apt-get install zsh -y
+echo "Time: $(date). ---APT: DOCKER Install ---" >> /etc/DOAZLAB/DOAZLABLog
 apt install docker-compose-v2 -y
 
+# Packages not available 8/4/26
+# apt install feroxbuster -y
+# apt-get install python3.11-venv -y
+# apt-get install metasploit-framework -y
+
+# Install Bundler
+echo "Time: $(date). ---GEM: bundler Install ---" >> /etc/DOAZLAB/DOAZLABLog
+gem install bundler
+
+# Install metasploit
+echo "Time: $(date). ---Install Metasploit ---" >> /etc/DOAZLAB/DOAZLABLog
+
+#Check if signature file exists, if it does, prior install was attempted and should be removed prior to reinstall.
+
+if command -v msfconsole >/dev/null 2>&1; then
+    echo "Metasploit is already installed."
+    echo "Time: $(date). ---Meteasploit - EAlready Installed" >> /etc/DOAZLAB/DOAZLABLog
+
+else
+    if [ -f /usr/share/keyrings/metasploit-framework.gpg ]; then
+         echo "Time: $(date). ---Meteasploit - Evidence of prior install attempt - cleanup gpg" >> /etc/DOAZLAB/DOAZLABLog
+         mv /usr/share/keyrings/metasploit-framework.gpg /usr/share/keyrings/metasploit-framework.gpg.old
+    else 
+         echo "Time: $(date). ---Meteasploit - Appears to be first install" >> /etc/DOAZLAB/DOAZLABLog
+    fi 
+    echo "Time: $(date). ---Meteasploit - Installing" >> /etc/DOAZLAB/DOAZLABLog
+    curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall && chmod 755 msfinstall && ./msfinstall
+echo "Time: $(date). ---Meteasploit - End install" >> /etc/DOAZLAB/DOAZLABLog
+fi
+
 # remove outdated packages
+echo "Time: $(date). ---apt auto-remove ---" >> /etc/DOAZLAB/DOAZLABLog
 apt-get autoremove -y
 
 # Install neo4j
@@ -44,9 +92,19 @@ apt-get autoremove -y
 # systemctl start neo4j
 
 # update snmp.conf
+echo "Time: $(date). Update SNMP ---" >> /etc/DOAZLAB/DOAZLABLog
+
 sed -e '/mibs/ s/^#*/#/' -i /etc/snmp/snmp.conf
 
+# Install Rust (NetExec Requirement)
+echo "Time: $(date).---Rust Install ---" >> /etc/DOAZLAB/DOAZLABLog
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+source "$HOME/.cargo/env"
+rustc --version && cargo --version
+
 # Repos
+echo "Time: $(date).---GIT CLONES ---" >> /etc/DOAZLAB/DOAZLABLog
+
 [[ ! -d /opt/testssl.sh ]] && git clone --depth 1 https://github.com/drwetter/testssl.sh.git /opt/testssl.sh
 [[ ! -d /opt/Responder ]] && git clone https://github.com/lgandx/Responder.git /opt/Responder
 [[ ! -d /opt/impacket ]] && git clone https://github.com/fortra/impacket.git /opt/impacket
@@ -76,6 +134,8 @@ EOF
 # see https://zchee.github.io/golang-wiki/GOPATH/ and https://maelvls.dev/go111module-everywhere/ for more info
 # TL:DR
 # GOPATH is still supported even though it has been replaced by Go modules and is technically deprecated since Go 1.16, BUT, you can still use GOPATH to specify where you want your go binaries installed.
+echo "Time: $(date).---Go Setup and Configurations ---" >> /etc/DOAZLAB/DOAZLABLog
+
 wget https://go.dev/dl/go1.21.4.linux-amd64.tar.gz
 tar -C ~/ -xzf go1.21.4.linux-amd64.tar.gz
 
@@ -108,9 +168,11 @@ GO111MODULE=on go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@la
 
 # ignore shellcheck warnings for source commands
 # shellcheck source=/dev/null
+
 install_with_virtualenv() {
     REPO_NAME="$1"
     PYENV="${HOME}/pyenv"
+    echo "Time: $(date).---InstallWithVirtualEnv: ${REPO_NAME} ---" >> /etc/DOAZLAB/DOAZLABLog
     if [ -d "/opt/${REPO_NAME}" ]; then
         cd "/opt/${REPO_NAME}" || exit 1
         virtualenv -p python3 "${PYENV}/${REPO_NAME}"
@@ -125,9 +187,11 @@ install_with_virtualenv() {
         cd - &>/dev/null || exit 1
     else
         echo -e "${REPO_NAME} does not exist."
+        echo "Time: $(date)---InstallWithVirtualEnv: ${REPO_NAME} does not exist." >> /etc/DOAZLAB/DOAZLABLog
     fi
 }
 
+echo "Time: $(date).---InstallWithVirtualEnvs ---" >> /etc/DOAZLAB/DOAZLABLog
 install_with_virtualenv Responder
 install_with_virtualenv impacket
 install_with_virtualenv BloodHound.py
@@ -143,14 +207,21 @@ install_pipx() {
     # check if pipx is already installed
     PIPX_EXISTS=$(which pipx)
     if [ -z "$PIPX_EXISTS" ]; then
+        echo "Time: $(date).---Pipx not found" >> /etc/DOAZLAB/DOAZLABLog
         # Get the Python 3 version
         python_version_output=$(python3 --version 2>&1)
         python_version=$(echo "$python_version_output" | awk '{print $2}' | cut -d '.' -f 1,2)
-
         if [ "$python_version" == "3.10" ] || [ "$python_version" == "3.11" ] || [ "$python_version" == "3.12" ]; then
+            echo "Time: $(date).---Installing Pipx installing" >> /etc/DOAZLAB/DOAZLABLog
             python3 -m pip install pipx --break-system-packages || python3 -m pip install pipx
-        elseapt update
-
+        else
+            echo "Time: $(date).---Pipx Version for py 3.11, 3.10/11/12 OK" >> /etc/DOAZLAB/DOAZLABLog
+        fi
+    else 
+        echo "Time: $(date).---Pipx Found" >> /etc/DOAZLAB/DOAZLABLog
+    fi
 }
 
+echo "Time: $(date).---Install Pipx" >> /etc/DOAZLAB/DOAZLABLog
 install_pipx
+
