@@ -26,6 +26,9 @@ configuration Deploy-ADCS {
         xScript InstallADCS
         {
             SetScript = {
+
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
                 Get-WindowsFeature -Name AD-Certificate | Install-WindowsFeature
                 Add-WindowsFeature Adcs-Cert-Authority -IncludeManagementTools
                 Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -Force
