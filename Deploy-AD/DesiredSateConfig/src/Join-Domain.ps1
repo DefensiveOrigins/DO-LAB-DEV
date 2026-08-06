@@ -26,7 +26,7 @@ configuration Join-Domain {
     if ($count -gt 1) {
         # Action if the count is greater than 1
         Write-Host "There are more than one Ethernet adapters."
-        $Interface = Get-NetAdapter | Where-Object InterfaceDescription -Like  "Microsoft Hyper-V Network Adapter" | Select-Object -First 1
+        $Interface = Get-NetAdapter | Where-Object InterfaceDescription -Like  "Microsoft Hyper-V Network Adapter*" | Select-Object -First 1
         Write-Host  $Interface
         $InterfaceAlias = $($Interface.Name)
         Write-Host $InterfaceAlias
