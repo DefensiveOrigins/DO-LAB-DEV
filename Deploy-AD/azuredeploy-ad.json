@@ -734,10 +734,11 @@
       "name": "[concat(variables('allWinWKS')[copyIndex('vmDomainJoinCopy')].vmName, '-joinDomain')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
-      "dependsOn": [
-        "InitialSetUpWKSCopy",
-        "VNET-UpdateDNS"
-      ],
+        "dependsOn": [
+            "InitialSetUpWKSCopy",
+            "VNET-UpdateDNS",
+            "DC01-AddSSHKey"
+        ],
       "copy": {
         "name": "vmDomainJoinCopy",
         "count": "[length(variables('allWinWKS'))]"
