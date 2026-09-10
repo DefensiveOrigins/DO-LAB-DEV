@@ -15,9 +15,9 @@ echo "Time: $(date). Triggered Initial Setup - Install-C2.sh." >> /etc/DOAZLAB/D
 
 # Download Files, Set X
 echo "Time: $(date). Download Setup Scripts" >> /etc/DOAZLAB/DOAZLABLog
-wget https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB/main/Deploy-Linux/scripts/Install-Tools.sh
-wget https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB/main/Deploy-Linux/scripts/RunAtReboot.sh
-wget https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB/main/Deploy-Linux/scripts/CheckTools.sh
+wget https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-Linux/scripts/Install-Tools.sh
+wget https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-Linux/scripts/RunAtReboot.sh
+wget https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-Linux/scripts/CheckTools.sh
 chmod +x Install-Tools.sh
 chmod +x RunAtReboot.sh
 chmod +x CheckTools.sh
