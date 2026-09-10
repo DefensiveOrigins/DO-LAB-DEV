@@ -290,7 +290,8 @@
       "location": "[parameters('location')]",
       "identity": { "type": "SystemAssigned" },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces/', concat('nic-', variables('vmName')))]"
+        "[resourceId('Microsoft.Network/networkInterfaces/', concat('nic-', variables('vmName')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
       ],
       "properties": {
         "hardwareProfile": {
@@ -319,6 +320,12 @@
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPasswordOrKey')]",
           "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
+          }
         }
       }
     },

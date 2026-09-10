@@ -287,6 +287,10 @@
       "type": "string",
       "value": "[reference('Deploy-AD').outputs.DCPublicIP.value]"
     },
+    "SRVPublicIP": {
+      "type": "string",
+      "value": "[reference('Deploy-AD').outputs.SRVPublicIP.value]"
+    },
     "WSPublicIP": {
       "type": "string",
       "value": "[reference('Deploy-AD').outputs.WSPublicIP.value]"

@@ -14,6 +14,12 @@ configuration Deploy-ADCS {
     Import-DscResource -ModuleName ActiveDirectoryDsc, NetworkingDsc, xPSDesiredStateConfiguration, ComputerManagementDsc
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+    # Domain-qualify the builder credential (e.g. DOAZLAB\dolabbuilder). AdminCreds.UserName is
+    # unqualified, which on a member server resolves to the LOCAL admin; the Enterprise CA install
+    # and template publish/ACL need the DOMAIN account (the forest builder / Enterprise Admin).
+    [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
+    [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($AdminCreds.UserName)", $AdminCreds.Password)
+
     Node localhost
     {
         LocalConfigurationManager
@@ -23,8 +29,15 @@ configuration Deploy-ADCS {
         }
 
         # ***** Install ADCS *****
+        # ADCS now runs on a member server (SRV01), not the DC. A member server's SYSTEM account
+        # lacks the Enterprise-Admin rights needed to install an Enterprise Root CA and to
+        # publish/ACL templates in the AD Configuration partition, so the resource runs under
+        # AdminCreds (the forest builder, an Enterprise Admin). See HARDENING.md for the
+        # least-privilege alternative (pre-delegating Public Key Services rights to the SRV01
+        # computer account so this can run as SYSTEM instead).
         xScript InstallADCS
         {
+            PsDscRunAsCredential = $DomainCreds
             SetScript = {
 
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -72,8 +85,8 @@ configuration Deploy-ADCS {
   		Set-ADCSTemplateACL -DisplayName DOAZLab_Computer  -Enroll -Identity 'DOAZLab\Domain Computers'
                 Set-ADCSTemplateACL -DisplayName DOAZLab_User  -Enroll -Identity 'DOAZLab\Domain Users'
 
-                #ESC6 
-                certutil -config "DC01.doazlab.com\doazlab-DC01-CA" -setreg policy\Editflags +EDITF_ATTRIBUTESUBJECTALTNAME2
+                #ESC6
+                certutil -config "SRV01.doazlab.com\doazlab-SRV01-CA" -setreg policy\Editflags +EDITF_ATTRIBUTESUBJECTALTNAME2
 
                 #Restart CertSrv
                 Restart-Service -Name CertSvc
@@ -97,5 +110,28 @@ configuration Deploy-ADCS {
             DependsOn   = "[xScript]InstallADCS"
         }
 
+    }
+}
+
+function Get-NetBIOSName {
+    [OutputType([string])]
+    param(
+        [string]$DomainFQDN
+    )
+
+    if ($DomainFQDN.Contains('.')) {
+        $length = $DomainFQDN.IndexOf('.')
+        if ( $length -ge 16) {
+            $length = 15
+        }
+        return $DomainFQDN.Substring(0, $length)
+    }
+    else {
+        if ($DomainFQDN.Length -gt 15) {
+            return $DomainFQDN.Substring(0, 15)
+        }
+        else {
+            return $DomainFQDN
+        }
     }
 }
