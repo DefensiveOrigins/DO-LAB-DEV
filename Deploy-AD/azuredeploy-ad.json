@@ -257,6 +257,7 @@
     "setChromeFRUscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB/main/Deploy-AD/scripts/Set-ChromeFRU.ps1",
     "addshortcutsscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB/main/Deploy-AD/scripts/Add-Shortcuts.ps1",
     "addsbrowsersscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB/main/Deploy-AD/scripts/Add-Browsers.ps1",
+    "enableAutoEnrollScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB/main/Deploy-AD/scripts/Enable-AutoEnrollment.ps1",
 
 
     // Powershell DSC Scripts
@@ -1045,6 +1046,25 @@
             "value": "[parameters('location')]"
           }
         }
+      }
+    },
+    {
+      "comments": "Enable machine autoenrollment on DC01 and enroll its Kerberos Authentication cert (LDAPS + PKINIT) once the ADCS CA is up on SRV01. Uses a managed Run Command because a Windows VM allows only one Custom Script Extension (DC01 already uses SetUpDC).",
+      "name": "[concat(variables('domainController')[0].vmName, '/AutoEnroll')]",
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
+      "apiVersion": "2023-09-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "SRV01-deployADCS",
+        "DC01-AddSSHKey"
+      ],
+      "properties": {
+        "source": {
+          "scriptUri": "[variables('enableAutoEnrollScript')]"
+        },
+        "asyncExecution": false,
+        "timeoutInSeconds": 600,
+        "treatFailureAsDeploymentFailure": false
       }
     }
   ],
