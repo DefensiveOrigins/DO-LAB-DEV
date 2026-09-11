@@ -111,6 +111,8 @@ echo "Time: $(date).---GIT CLONES ---" >> /etc/DOAZLAB/DOAZLABLog
 [[ ! -d /opt/BloodHound.py ]] && git clone https://github.com/fox-it/BloodHound.py.git /opt/BloodHound.py
 [[ ! -d /opt/Certipy ]] && git clone https://github.com/DefensiveOrigins/Certipyv5.git /opt/Certipy
 [[ ! -d /opt/Coercer ]] && git clone https://github.com/p0dalirius/Coercer.git /opt/Coercer
+# PetitPotam has no venv of its own; it depends only on impacket and runs under the impacket pyenv.
+[[ ! -d /opt/PetitPotam ]] && git clone https://github.com/topotam/PetitPotam.git /opt/PetitPotam
 [[ ! -d /opt/mitm6 ]] && git clone https://github.com/dirkjanm/mitm6.git /opt/mitm6
 [[ ! -d /opt/PCredz ]] && git clone https://github.com/lgandx/PCredz.git /opt/PCredz
 [[ ! -d /opt/certsync ]] && git clone https://github.com/zblurx/certsync.git /opt/certsync
