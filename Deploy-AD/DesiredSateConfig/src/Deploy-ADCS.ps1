@@ -44,6 +44,10 @@ configuration Deploy-ADCS {
 
                 Get-WindowsFeature -Name AD-Certificate | Install-WindowsFeature
                 Add-WindowsFeature Adcs-Cert-Authority -IncludeManagementTools
+                # A member server lacks the ActiveDirectory PowerShell module a DC has by
+                # default; the ADCSTemplate module (New-ADCSTemplate / Set-ADCSTemplateACL)
+                # #requires it, so install RSAT-AD-PowerShell before the template steps.
+                Add-WindowsFeature RSAT-AD-PowerShell -IncludeManagementTools
                 Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -Force
 
                 Add-WindowsFeature ADCS-Enroll-Web-Pol -IncludeManagementTools 
