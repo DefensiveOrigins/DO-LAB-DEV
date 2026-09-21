@@ -63,7 +63,8 @@
             "Standard_D2s_v3",
             "Standard_D2s_v4",
             "Standard_D2s_v6",
-            "Standard_D2s_v7"
+            "Standard_D2s_v7",
+            "Standard_D4s_v6"
         ],
       "metadata": {
         "description": "Size of the virtual machine. Reference: https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general"
@@ -188,7 +189,7 @@
       }
     },
 
-    "c2SetupScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-Linux/scripts/Install-C2.sh",
+    "c2SetupScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-Linux/scripts/Install-C2.sh",
     "vmName": "[parameters('vmName')]"
   },
   "resources": [

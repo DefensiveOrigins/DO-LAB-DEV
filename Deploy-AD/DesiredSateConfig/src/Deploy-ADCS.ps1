@@ -89,6 +89,23 @@ configuration Deploy-ADCS {
   		Set-ADCSTemplateACL -DisplayName DOAZLab_Computer  -Enroll -Identity 'DOAZLab\Domain Computers'
                 Set-ADCSTemplateACL -DisplayName DOAZLab_User  -Enroll -Identity 'DOAZLab\Domain Users'
 
+                #ESC4 (L2012 ESC4 step): publish a benign template, then grant the low-privileged lab user
+                # GenericAll over the template object. That write access is the ESC4 condition - the student
+                # reconfigures the template into an ESC1 state (enrollee-supplies-subject + client-auth EKU)
+                # with Certipy and enrolls. lablowpriv is created early by Add-DC3-Objects on the DC.
+                New-ADCSTemplate -DisplayName DOAZLab_ESC4 -JSON (Get-Content C:\ProgramData\DOAZLab_User.json -Raw) -Publish -ErrorAction SilentlyContinue
+                Set-ADCSTemplateACL -DisplayName DOAZLab_ESC4 -Enroll -Identity 'DOAZLab\Domain Users'
+                try {
+                    Import-Module ActiveDirectory -ErrorAction Stop
+                    $confNC = (Get-ADRootDSE).configurationNamingContext
+                    $tmplDN = "CN=DOAZLab_ESC4,CN=Certificate Templates,CN=Public Key Services,CN=Services,$confNC"
+                    $sid = (Get-ADUser -Identity lablowpriv).SID
+                    $acl = Get-Acl -Path "AD:$tmplDN"
+                    $ace = New-Object System.DirectoryServices.ActiveDirectoryAccessRule($sid, 'GenericAll', 'Allow')
+                    $acl.AddAccessRule($ace)
+                    Set-Acl -Path "AD:$tmplDN" -AclObject $acl
+                } catch { Write-Host "ESC4 template ACL grant failed: $_" }
+
                 #ESC6
                 certutil -config "SRV01.doazlab.com\doazlab-SRV01-CA" -setreg policy\Editflags +EDITF_ATTRIBUTESUBJECTALTNAME2
 
