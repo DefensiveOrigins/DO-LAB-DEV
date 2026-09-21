@@ -56,7 +56,7 @@ configuration Deploy-SCCM {
                 $SmsDir     = 'C:\Program Files\Microsoft Configuration Manager'
                 $SiteServer = "$($env:COMPUTERNAME).$using:DomainFQDN"    # SRV01.doazlab.com
                 $NaaUser    = "$($using:DomainNetbiosName)\svc_sccmnaa"
-                $NaaPass    = 'SCCMnaa2026!'                              # matches the domainUsers entry
+                $NaaPass    = 'Config#Mgr2026'                            # matches the domainUsers entry (must not contain the account name, per AD complexity)
                 $ClientPush = 'WS05'
                 $work       = 'C:\SCCMLab'
                 New-Item -ItemType Directory -Force -Path $work | Out-Null
@@ -65,7 +65,7 @@ configuration Deploy-SCCM {
                 # Installer sources. Mirror these under AC-Extras and repoint if the public URLs drift.
                 $adkUrl     = 'https://go.microsoft.com/fwlink/?linkid=2289980'   # ADK for Win11 24H2
                 $adkPeUrl   = 'https://go.microsoft.com/fwlink/?linkid=2289981'   # WinPE add-on
-                $sqlEvalUrl = 'https://go.microsoft.com/fwlink/?linkid=2215158'   # SQL Server 2022 Eval (SQL2022-SSEI-Eval.exe)
+                $sqlEvalUrl = 'https://go.microsoft.com/fwlink/?linkid=2215158'   # SQL Server 2022 Developer SSEI (SQL2022-SSEI-Dev.exe)
                 $cmEvalUrl  = 'https://go.microsoft.com/fwlink/?linkid=2195628'   # MCM/SCCM Current Branch eval bootstrap
 
                 # ================= 1. IIS + Windows features SCCM needs (ADCS already added Web-Server) =========
@@ -88,10 +88,11 @@ configuration Deploy-SCCM {
                 Start-Process $adkExe -ArgumentList '/quiet /features OptionId.DeploymentTools OptionId.ImagingAndConfigurationDesigner /norestart' -Wait
                 Start-Process $adkPe  -ArgumentList '/quiet /features OptionId.WindowsPreinstallationEnvironment /norestart' -Wait
 
-                # ================= 3. SQL Server (Evaluation, full - NOT Express) =============================
-                # Pull the SQL Eval bootstrapper, have it download the media, then run a config-file install.
-                Log 'Installing SQL Server Evaluation'
-                $sqlSei = "$work\SQL2022-SSEI-Eval.exe"
+                # ================= 3. SQL Server (Developer edition, full engine - NOT Express) ================
+                # linkid 2215158 serves the SQL 2022 Developer SSEI (free, full engine, fine for a lab site DB).
+                # Pull the SSEI bootstrapper, have it download the media, then run a config-file install.
+                Log 'Installing SQL Server (Developer edition)'
+                $sqlSei = "$work\SQL2022-SSEI-Dev.exe"
                 Invoke-WebRequest -Uri $sqlEvalUrl -OutFile $sqlSei -UseBasicParsing
                 Start-Process $sqlSei -ArgumentList "/ACTION=Download /MEDIAPATH=$work\SQLMedia /MEDIATYPE=CAB /QUIET" -Wait
                 # Locate the extracted setup.exe

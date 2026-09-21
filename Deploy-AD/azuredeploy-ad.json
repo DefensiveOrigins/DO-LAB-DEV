@@ -55,7 +55,7 @@
             "SamAccountName": "svc_sccmnaa",
             "Department": "IT Support",
             "JobTitle": "SCCM Network Access Account",
-            "Password": "SCCMnaa2026!",
+            "Password": "Config#Mgr2026",
             "Identity": "Users",
             "UserContainer": "DomainUsers"
           },
@@ -65,7 +65,7 @@
             "SamAccountName": "lablowpriv",
             "Department": "Sales",
             "JobTitle": "Standard User",
-            "Password": "LabLowPriv2026!",
+            "Password": "Standard#User2026",
             "Identity": "Users",
             "UserContainer": "DomainUsers"
           }

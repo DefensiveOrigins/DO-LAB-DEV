@@ -189,6 +189,9 @@ configuration Add-DC3-Objects {
                     $arrService.Refresh()
                 }
 
+                # The GroupPolicy module (New-GPO/Set-GPPermission) needs GPMC, which is not installed by
+                # the AD DS role alone. Ensure it before importing (idempotent - no-op if already present).
+                Install-WindowsFeature -Name GPMC -IncludeManagementTools -ErrorAction SilentlyContinue | Out-Null
                 Import-Module GroupPolicy -ErrorAction SilentlyContinue
 
                 $DomainName = $using:domainFQDN
