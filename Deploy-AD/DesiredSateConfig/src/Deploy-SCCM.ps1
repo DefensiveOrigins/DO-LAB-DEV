@@ -54,8 +54,8 @@ configuration Deploy-SCCM {
                 $SiteCode   = 'DOZ'
                 $SiteName   = 'DOAZLab Primary Site'
                 $SmsDir     = 'C:\Program Files\Microsoft Configuration Manager'
-                $SiteServer = "$($env:COMPUTERNAME).$using:DomainFQDN"    # SRV01.doazlab.com
-                $NaaUser    = "$($using:DomainNetbiosName)\svc_sccmnaa"
+                $SiteServer = "$($env:COMPUTERNAME).doazlab.com"    # SRV01.doazlab.com
+                $NaaUser    = "DOAZLab\svc_sccmnaa"
                 $NaaPass    = 'Config#Mgr2026'                            # matches the domainUsers entry (must not contain the account name, per AD complexity)
                 $ClientPush = 'WS05'
                 $work       = 'C:\SCCMLab'
@@ -102,9 +102,9 @@ configuration Deploy-SCCM {
 ACTION="Install"
 FEATURES=SQLENGINE
 INSTANCENAME=MSSQLSERVER
-SQLSYSADMINACCOUNTS="$($using:DomainNetbiosName)\DOAdmin" "$($using:DomainNetbiosName)\$($env:COMPUTERNAME)`$"
-SQLSVCACCOUNT="$($using:DomainNetbiosName)\DOAdmin"
-AGTSVCACCOUNT="$($using:DomainNetbiosName)\DOAdmin"
+SQLSYSADMINACCOUNTS="DOAZLab\DOAdmin" "DOAZLab\$($env:COMPUTERNAME)`$"
+SQLSVCACCOUNT="DOAZLab\DOAdmin"
+AGTSVCACCOUNT="DOAZLab\DOAdmin"
 SQLSVCSTARTUPTYPE="Automatic"
 AGTSVCSTARTUPTYPE="Automatic"
 TCPENABLED="1"
@@ -145,7 +145,7 @@ EXEC sp_configure 'max server memory (MB)', 6144; RECONFIGURE;
                     New-ADObject -Name 'System Management' -Type 'container' -Path "CN=System,$confNC"
                 }
                 # Grant the site server computer account Full Control over the container (+ descendants)
-                & dsacls "$smDN" /I:T /G "$($using:DomainNetbiosName)\$($env:COMPUTERNAME)`$:GA" | Out-Null
+                & dsacls "$smDN" /I:T /G "DOAZLab\$($env:COMPUTERNAME)`$:GA" | Out-Null
 
                 # ================= 5. Install ConfigMgr primary site (unattended) =============================
                 Log 'Running ConfigMgr unattended setup'
