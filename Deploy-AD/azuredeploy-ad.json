@@ -358,8 +358,10 @@
       "sku": {
         "name": "Standard_LRS"
       },
-      "kind": "Storage",
-      "properties": {}
+      "kind": "StorageV2",
+      "properties": {
+        "accessTier": "Hot"
+      }
     },
     {
       "comments": "Default Network Security Group for Windows endpoints",
