@@ -300,7 +300,7 @@
     "joinDomainScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Join-Domain.zip",
     "installSysmonScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Install-Sysmon.zip",
     "deployADCSScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Deploy-ADCS.zip",
-    "deploySCCMScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Deploy-SCCM.zip",
+    "deploySCCMScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Deploy-SCCM-v2.zip",
     "addsshscript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Add-SSH-key.zip",
 
     // Initial Setup Scripts
