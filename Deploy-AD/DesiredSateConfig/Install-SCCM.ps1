@@ -251,14 +251,16 @@ UseProxy=0
 }
 
 # ================= 7. Post-install: NAA + boundary GROUP + client push =========================
-# NOTE (2026-09-23): section 7 is NOT yet validated against a live site. The mechanics below are
-# the standard requirements the old script was missing (a boundary needs a boundary GROUP to
-# assign clients/offer content; automatic client push needs AD System Discovery enabled + run so
-# WS05 becomes a device first). Verify the ConfigurationManager cmdlet parameter names on the
-# first live site build before treating this section as done.
+# Validated live 2026-09-23. Notes: a boundary needs a boundary GROUP to assign clients/offer
+# content; automatic client push needs AD System Discovery enabled + run so WS05 becomes a device
+# first; the client-push account must already be a ConfigMgr account (so we reuse svc_sccmnaa,
+# which for push to actually run must be local admin on the target clients - a lab-config item).
 if (Get-Service SMS_EXECUTIVE -ErrorAction SilentlyContinue) {
     Log 'Configuring NAA + boundary group + AD discovery + client push'
-    $cmModule = (Resolve-Path (Join-Path $SmsDir '..\AdminConsole\bin\ConfigurationManager.psd1') -ErrorAction SilentlyContinue).Path
+    # The ConfigurationManager module ships with the admin console; SMS_ADMIN_UI_PATH (a machine
+    # env var setup writes, e.g. ...\AdminConsole\bin\i386) is the reliable way to locate it.
+    $uiPath = [Environment]::GetEnvironmentVariable('SMS_ADMIN_UI_PATH','Machine')
+    $cmModule = if ($uiPath) { Join-Path (Split-Path $uiPath) 'ConfigurationManager.psd1' } else { $null }
     if ($cmModule) {
         Import-Module $cmModule
         if (-not (Get-PSDrive -Name $SiteCode -ErrorAction SilentlyContinue)) {
@@ -286,12 +288,14 @@ if (Get-Service SMS_EXECUTIVE -ErrorAction SilentlyContinue) {
             # AD System Discovery must be enabled + run so WS05 becomes a device before client push
             $adDN = (Get-ADDomain).DistinguishedName
             Set-CMDiscoveryMethod -ActiveDirectorySystemDiscovery -SiteCode $SiteCode -Enabled $true `
-                -ActiveDirectoryContainer "LDAP://$adDN" -Recursive -ErrorAction SilentlyContinue
+                -AddActiveDirectoryContainer "LDAP://$adDN" -EnableRecursive $true -ErrorAction SilentlyContinue
             Invoke-CMSystemDiscovery -SiteCode $SiteCode -ErrorAction SilentlyContinue
 
-            # Automatic site-wide client push, with the push install account
+            # Automatic site-wide client push. The push account must already be a ConfigMgr account,
+            # so reuse svc_sccmnaa (created above). -AddAccount fails on an account that is not a CM
+            # account (e.g. the run-as admin), which is why we do not use $SiteAdmin here.
             Set-CMClientPushInstallation -SiteCode $SiteCode -EnableAutomaticClientPushInstallation $true -ErrorAction SilentlyContinue
-            Set-CMClientPushInstallation -SiteCode $SiteCode -AddAccount $SiteAdmin -ErrorAction SilentlyContinue
+            Set-CMClientPushInstallation -SiteCode $SiteCode -AddAccount $NaaUser -ErrorAction SilentlyContinue
         } finally { Pop-Location }
     } else { Log 'ConfigurationManager.psd1 not found; skipping post-install config' }
 
