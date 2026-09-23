@@ -185,6 +185,20 @@ if ($domainNC) {
     } catch { Log "System Management container ACL grant failed: $_" }
 }
 
+# ================= 5b. ODBC Driver 18 for SQL Server (hard ConfigMgr SQL prereq) ==============
+# ConfigMgr's SQL connectivity check builds a connection string that names "ODBC Driver 18 for
+# SQL Server"; SQL setup only leaves Driver 17, so the check fails ("Invalid connection string
+# attribute") until Driver 18 is present. The copy in the media (SMSSETUP\BIN\X64\msodbcsql.msi)
+# is a 0-byte stub, so pull the real MSI from the fwlink ConfigMgr setup itself points at.
+if (Get-OdbcDriver -Name 'ODBC Driver 18 for SQL Server' -ErrorAction SilentlyContinue) {
+    Log 'ODBC Driver 18 for SQL Server already installed'
+} else {
+    Log 'Installing ODBC Driver 18 for SQL Server (fwlink 2220989)'
+    $odbc = "$work\msodbcsql18.msi"
+    Get-File 'https://go.microsoft.com/fwlink/?linkid=2220989' $odbc
+    Start-Process msiexec.exe -ArgumentList '/i',$odbc,'/qn','IACCEPTMSODBCSQLLICENSETERMS=YES','ADDLOCAL=ALL' -Wait
+}
+
 # ================= 6. Install the ConfigMgr primary site (unattended) ==========================
 if (Get-Service SMS_EXECUTIVE -ErrorAction SilentlyContinue) {
     Log 'ConfigMgr site already installed (SMS_EXECUTIVE present)'
