@@ -66,7 +66,8 @@ if ((Get-WindowsFeature Web-Server).Installed -and (Get-WindowsFeature BITS).Ins
         'Web-WMI','Web-Static-Content','Web-Default-Doc','Web-Dir-Browsing','Web-Http-Errors',
         'Web-Http-Logging','Web-Request-Monitor','Web-Filtering','Web-ISAPI-Ext','Web-ISAPI-Filter',
         'Web-Mgmt-Console','Web-Mgmt-Compat','Web-Scripting-Tools',
-        'BITS','BITS-IIS-Ext','RDC','NET-Framework-45-Core','NET-Framework-45-ASPNET'
+        'BITS','BITS-IIS-Ext','RDC',
+        'NET-Framework-Core','NET-Framework-45-Core','NET-Framework-45-ASPNET'   # NET-Framework-Core = .NET 3.5, a hard ConfigMgr prereq
     )
     Install-WindowsFeature -Name $features | Out-Null
     # WebDAV is not a Windows feature name; SCCM does not require it for HTTP MP/DP. Skipped.
