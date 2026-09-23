@@ -191,9 +191,9 @@ if (Get-Service SMS_EXECUTIVE -ErrorAction SilentlyContinue) {
     Log 'Running ConfigMgr unattended setup (this stage runs 30-60 min)'
     $prereqPath = "$work\CMPrereq"
     New-Item -ItemType Directory -Force -Path $prereqPath | Out-Null
-    # Pre-stage the redistributable prerequisites with setupdl.exe so site setup is deterministic.
-    $setupdl = Get-ChildItem $cmSrc -Recurse -Filter setupdl.exe -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-    if ($setupdl) { Log 'Pre-downloading ConfigMgr prerequisites (setupdl.exe)'; Start-Process $setupdl -ArgumentList "$prereqPath" -Wait }
+    # PrerequisiteComp=0 => setup.exe downloads the redistributable prerequisites itself as part of
+    # the unattended /script install. We do NOT pre-run the standalone setupdl.exe helper: it hangs
+    # (0 CPU, no network, no window) in the non-interactive Session-0 scheduled-task context.
     $cmIni = @"
 [Identification]
 Action=InstallPrimarySite
@@ -206,7 +206,7 @@ SMSInstallDir=$SmsDir
 SDKServer=$SiteServer
 RoleCommunicationProtocol=HTTPorHTTPS
 ClientsUsePKICertificate=0
-PrerequisiteComp=1
+PrerequisiteComp=0
 PrerequisitePath=$prereqPath
 ManagementPoint=$SiteServer
 ManagementPointProtocol=HTTP
