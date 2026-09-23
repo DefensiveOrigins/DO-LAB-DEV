@@ -24,7 +24,10 @@ $SiteCode   = 'DOZ'
 $SiteName   = 'DOAZLab Primary Site'
 $SmsDir     = 'C:\Program Files\Microsoft Configuration Manager'
 $SiteServer = "$($env:COMPUTERNAME).doazlab.com"    # SRV01.doazlab.com
-$SiteAdmin  = 'DOAZLab\DOAdmin'                      # the account this task runs as (site Full Admin)
+# The site Full Admin / SQL sysadmin is whatever account this task actually runs as. The DSC
+# bootstrap registers the task as the deploy's AdminCreds (the forest builder, e.g. dolabbuilder),
+# NOT a separate "DOAdmin", so resolve it at runtime instead of hardcoding.
+$SiteAdmin  = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name   # e.g. DOAZLab\dolabbuilder
 $MachineAcct= "DOAZLab\$($env:COMPUTERNAME)`$"       # DOAZLab\SRV01$
 $NaaUser    = 'DOAZLab\svc_sccmnaa'
 $NaaPass    = 'Config#Mgr2026'                       # matches the domainUsers entry (must not contain the account name, per AD complexity)
@@ -167,7 +170,18 @@ if ($domainNC) {
         New-ADObject -Name 'System Management' -Type 'container' -Path "CN=System,$domainNC"
     } else { Log 'System Management container already present' }
     Log 'Granting the site server computer account Full Control over the container (+ descendants)'
-    & dsacls "$smDN" /I:T /G "${MachineAcct}:GA" | Out-Null
+    # Use the AD: provider (from RSAT-AD-PowerShell, already installed) rather than dsacls.exe -
+    # dsacls ships with the RSAT AD DS *tools*, which are NOT present on this member server, so
+    # `& dsacls` is command-not-found and terminates the script before the site install.
+    try {
+        $compSid = (Get-ADComputer $env:COMPUTERNAME).SID
+        $acl = Get-Acl -Path "AD:$smDN"
+        $ace = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+            $compSid, 'GenericAll', 'Allow',
+            [System.DirectoryServices.ActiveDirectorySecurityInheritance]::All)
+        $acl.AddAccessRule($ace)
+        Set-Acl -Path "AD:$smDN" -AclObject $acl
+    } catch { Log "System Management container ACL grant failed: $_" }
 }
 
 # ================= 6. Install the ConfigMgr primary site (unattended) ==========================
