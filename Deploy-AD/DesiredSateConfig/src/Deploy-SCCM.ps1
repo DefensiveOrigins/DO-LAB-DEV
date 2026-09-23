@@ -1,14 +1,16 @@
-# Deploy-SCCM.ps1  -  thin DSC bootstrap for the SCCM primary-site install.
+# Deploy-SCCM.ps1  -  thin, ASYNC DSC bootstrap for the SCCM primary-site install.
 #
-# The heavy install logic lives in Install-SCCM.ps1 (a plain script), which this SetScript
-# downloads and runs with powershell.exe. The complex logic was ORIGINALLY inline in this
-# SetScript, but WMF 5.1's DSC compiler mis-parses a large inline SetScript (a cascade of
-# "Unexpected token" errors at compile time, though the same script parses clean as ordinary
-# PowerShell). Keeping the SetScript trivial avoids that entirely and lets the installer be
-# run/iterated by hand on SRV01.
+# The heavy install logic lives in Install-SCCM.ps1 (a plain script). A full SCCM build
+# (SQL + ADK + ConfigMgr primary site) runs far longer than the Azure DSC extension's provisioning
+# window, so this SetScript does NOT run it inline (that produced ARM VMExtensionProvisioningTimeout).
+# Instead it registers a scheduled task that runs Install-SCCM.ps1 as DOAZLAB\DOAdmin and returns
+# immediately, letting the extension report success quickly while the install proceeds decoupled.
+# Install-SCCM.ps1 is idempotent, so an -AtStartup retry after a reboot resumes rather than restarts,
+# and it unregisters this task once it drops its completion flag.
 #
-# Runs as DOAZLAB\DOAdmin (PsDscRunAsCredential) so the child powershell.exe inherits the
-# rights the schema extension / container ACL / SQL / ConfigMgr setup need.
+# (Two WMF-5.1 constraints shaped this: a large inline SetScript mis-parses at DSC compile time, and
+# $using: is unavailable, so the run-as credential is baked into the SetScript text at compile time.
+# The lab admin password is already public in the deploy repo, so this is acceptable for the lab.)
 
 configuration Deploy-SCCM {
     param
@@ -19,10 +21,25 @@ configuration Deploy-SCCM {
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$AdminCreds
     )
-    Import-DscResource -ModuleName xPSDesiredStateConfiguration, ComputerManagementDsc
+    Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
-    [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($AdminCreds.UserName)", $AdminCreds.Password)
+    $domUser    = "${DomainNetbiosName}\$($AdminCreds.UserName)"
+    $domPass    = $AdminCreds.GetNetworkCredential().Password
+    $installUrl = 'https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Install-SCCM.ps1'
+
+    # Build the SetScript with the run-as user/password baked in at compile time (no $using: on 5.1).
+    $setScriptText = @"
+        `$ErrorActionPreference = 'Stop'
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        New-Item -ItemType Directory -Force -Path 'C:\SCCMLab' | Out-Null
+        Invoke-WebRequest -Uri '$installUrl' -OutFile 'C:\SCCMLab\Install-SCCM.ps1' -UseBasicParsing
+        `$action  = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File C:\SCCMLab\Install-SCCM.ps1'
+        `$trigger = New-ScheduledTaskTrigger -AtStartup
+        `$set     = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::FromHours(4)) -RestartCount 3 -RestartInterval ([TimeSpan]::FromMinutes(5))
+        Register-ScheduledTask -TaskName 'InstallSCCM' -Action `$action -Trigger `$trigger -Settings `$set -User '$domUser' -Password '$domPass' -RunLevel Highest -Force | Out-Null
+        Start-ScheduledTask -TaskName 'InstallSCCM'
+"@
 
     Node localhost
     {
@@ -32,27 +49,12 @@ configuration Deploy-SCCM {
             RebootNodeIfNeeded = $true
         }
 
-        xScript InstallSCCM
+        # Bootstraps the installer as an independent scheduled task, then returns immediately.
+        xScript BootstrapSCCM
         {
-            PsDscRunAsCredential = $DomainCreds
-            SetScript = {
-                $ErrorActionPreference = 'Stop'
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-                New-Item -ItemType Directory -Force -Path 'C:\SCCMLab' | Out-Null
-                $installUrl = 'https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Install-SCCM.ps1'
-                $installPs1 = 'C:\SCCMLab\Install-SCCM.ps1'
-                Invoke-WebRequest -Uri $installUrl -OutFile $installPs1 -UseBasicParsing
-                & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installPs1
-                if ($LASTEXITCODE -ne 0) { throw "Install-SCCM.ps1 exited with code $LASTEXITCODE" }
-            }
+            SetScript  = [ScriptBlock]::Create($setScriptText)
             GetScript  = { return @{ "Result" = "false" } }
             TestScript = { return $false }
-        }
-
-        PendingReboot RebootAfterSCCM
-        {
-            Name      = 'RebootAfterSCCM'
-            DependsOn = "[xScript]InstallSCCM"
         }
     }
 }
