@@ -45,12 +45,12 @@ $adkPeUrl = 'https://go.microsoft.com/fwlink/?linkid=2289981'   # WinPE add-on
 function Get-File($url, $dest) {
     if (Test-Path $dest) { Log "already present: $dest"; return }
     Log "downloading $url -> $dest"
-    Import-Module BitsTransfer -ErrorAction SilentlyContinue
-    if (Get-Command Start-BitsTransfer -ErrorAction SilentlyContinue) {
-        Start-BitsTransfer -Source $url -Destination $dest
-    } else {
-        (New-Object System.Net.WebClient).DownloadFile($url, $dest)
-    }
+    # Use WebClient (WinHTTP), NOT BITS. A BITS foreground transfer needs the owning user's
+    # interactive logon session; under this non-interactive scheduled task (Session 0, running as
+    # DOAdmin with no interactive session) Start-BitsTransfer creates a job that never completes
+    # and throws - which stalled the first live run at the ADK download. WebClient has no such
+    # dependency (it is also what the DSC SetScript uses to fetch this script).
+    (New-Object System.Net.WebClient).DownloadFile($url, $dest)
 }
 
 # ================= 1. IIS + Windows features SCCM needs (ADCS already added Web-Server) ========
