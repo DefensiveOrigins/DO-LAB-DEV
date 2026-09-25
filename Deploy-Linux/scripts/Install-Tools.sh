@@ -123,7 +123,7 @@ echo "Time: $(date).---GIT CLONES ---" >> /etc/DOAZLAB/DOAZLABLog
 [[ ! -d /opt/ADExplorerSnapshot ]] && git clone https://github.com/c3c/ADExplorerSnapshot.git /opt/ADExplorerSnapshot
 [[ ! -d /opt/bofhound ]] && git clone https://github.com/coffeegist/bofhound.git /opt/bofhound
 # SCCM attack tooling (L2017 SCCM lab)
-[[ ! -d /opt/sccmhunter ]] && git clone https://github.com/garrettfoster13/sccmhunter.git /opt/sccmhunter
+[[ ! -d /opt/sccmhunter ]] && git clone https://github.com/DefensiveOrigins/sccmhunter.git /opt/sccmhunter
 # GPO abuse tooling (L2019 GPO-Abuse lab)
 [[ ! -d /opt/pyGPOAbuse ]] && git clone https://github.com/Hackndo/pyGPOAbuse.git /opt/pyGPOAbuse
 
