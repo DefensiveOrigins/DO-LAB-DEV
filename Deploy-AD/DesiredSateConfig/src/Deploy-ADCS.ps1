@@ -48,7 +48,17 @@ configuration Deploy-ADCS {
                 # default; the ADCSTemplate module (New-ADCSTemplate / Set-ADCSTemplateACL)
                 # #requires it, so install RSAT-AD-PowerShell before the template steps.
                 Add-WindowsFeature RSAT-AD-PowerShell -IncludeManagementTools
-                Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -Force
+                # Idempotency guard: Install-AdcsCertificationAuthority throws
+                # CertificationAuthoritySetupException ("The Certification Authority is already installed")
+                # when the CA role is already configured. Because TestScript always returns $false, this
+                # SetScript re-runs on any redeploy; without this guard a re-run aborts here before the
+                # template / ESC steps. Swallow only the already-installed case.
+                try {
+                    Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -Force -ErrorAction Stop
+                } catch {
+                    if ("$_" -notmatch 'already installed') { throw }
+                    Write-Host "ADCS CA already installed; skipping configuration."
+                }
 
                 Add-WindowsFeature ADCS-Enroll-Web-Pol -IncludeManagementTools 
                 Add-WindowsFeature Adcs-Enroll-Web-Svc -IncludeManagementTools 
@@ -72,8 +82,27 @@ configuration Deploy-ADCS {
                 Add-CATemplate "ExchangeUser" -Force
                 Add-CATemplate "EnrollmentAgent" -Force
 
-                #Install module to manage import/export of templates
-                Install-Module ADCSTemplate -Force
+                #Install module to manage import/export of templates.
+                # Bootstrap the NuGet provider + trust PSGallery BEFORE the first Install-Module. On a fresh,
+                # non-interactive (Session 0) DSC run the first Install-Module has to silently auto-install the
+                # NuGet provider; when that bootstrap does not complete, Install-Module returns "No match was
+                # found ... module name 'ADCSTemplate'" and the whole ADCS config fails (and, with the CA
+                # already installed, a redeploy cannot recover). Do it explicitly, with retries for transient
+                # PSGallery hiccups.
+                Get-PackageProvider -Name NuGet -ForceBootstrap -ErrorAction SilentlyContinue | Out-Null
+                Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue | Out-Null
+                if (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue) {
+                    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+                }
+                for ($i = 1; $i -le 5 -and -not (Get-Module ADCSTemplate -ListAvailable); $i++) {
+                    try {
+                        Install-Module ADCSTemplate -Force -Scope AllUsers -ErrorAction Stop
+                    } catch {
+                        Write-Host "Install-Module ADCSTemplate attempt $i failed: $_"
+                        Start-Sleep -Seconds 15
+                    }
+                }
+                Import-Module ADCSTemplate -Force -ErrorAction SilentlyContinue
                 #Export-ADCSTemplate vuln_Template > vuln_template.json
 
                 #Download DOLAB templates 
