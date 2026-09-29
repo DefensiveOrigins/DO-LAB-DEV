@@ -275,7 +275,6 @@
     "createADTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/createADForest.json",
     "joinDomainTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/joinDomain.json",
     "deployADCSTemplateURI": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/deployADCS.json",
-    "deploySCCMTemplateURI": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/deploySCCM.json",
     "addsshkeyscripttempateuri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/AddSSHKey.json",
 
     // Custom Scripts
@@ -300,7 +299,6 @@
     "joinDomainScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Join-Domain.zip",
     "installSysmonScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Install-Sysmon.zip",
     "deployADCSScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Deploy-ADCS.zip",
-    "deploySCCMScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Deploy-SCCM-v4.zip",
     "addsshscript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Add-SSH-key.zip",
 
     // Initial Setup Scripts
@@ -980,48 +978,12 @@
       }
     },
     {
-      "comments": "Install the SCCM (ConfigMgr Current Branch, Eval) primary site on SRV01 for the L2017 SCCM/SCCMhunter lab. Runs after SRV01-deployADCS because both reconfigure the same-named PowerShellDSC extension on the VM (only one DSC extension applies at a time). The Deploy-SCCM DSC runs under AdminCreds (DOAdmin) for the schema extension and container ACL. By the time this long install reaches its client-push step, WS05 (joined early via WS05-joinDomain) is present.",
-      "name": "SRV01-deploySCCM",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
-      "dependsOn": [
-        "SRV01-deployADCS"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('deploySCCMTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "vmName": {
-            "value": "[variables('memberServer')[0].vmName]"
-          },
-          "deploysccmscript": {
-            "value": "[variables('deploySCCMScript')]"
-          },
-          "domainFQDN": {
-            "value": "[parameters('domainFQDN')]"
-          },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "adminPassword": {
-            "value": "[parameters('adminPassword')]"
-          },
-          "location": {
-            "value": "[parameters('location')]"
-          }
-        }
-      }
-    },
-    {
-      "comments": "SSH key onto SRV01 for parity with DC01/WS05. Runs after SRV01-deploySCCM because all three (ADCS, SCCM, SSH key) reconfigure the same-named PowerShellDSC extension on the VM and must be serialized.",
+      "comments": "SSH key onto SRV01 for parity with DC01/WS05. Runs after SRV01-deployADCS because both reconfigure the same-named PowerShellDSC extension on the VM and must be serialized. NOTE: SCCM is no longer installed by the automatic deploy; add the SCCM primary site to a deployed lab by running Deploy-AD/DesiredSateConfig/Deploy-SCCM-Standalone.ps1 on SRV01 as DOAZLab\\DOAdmin.",
       "name": "SRV01-AddSSHKey",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "dependsOn": [
-        "SRV01-deploySCCM"
+        "SRV01-deployADCS"
       ],
       "properties": {
         "mode": "Incremental",
