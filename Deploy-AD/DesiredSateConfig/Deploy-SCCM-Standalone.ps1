@@ -28,7 +28,7 @@ param(
     # Force a fresh download of the installer engine even if a local copy exists.
     [switch]$DownloadInstaller,
 
-    [string]$InstallerUrl = 'https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Install-SCCM.ps1',
+    [string]$InstallerUrl = 'https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/DesiredSateConfig/Install-SCCM.ps1',
 
     # Skip the elevation / account-rights preflight (not recommended).
     [switch]$SkipChecks

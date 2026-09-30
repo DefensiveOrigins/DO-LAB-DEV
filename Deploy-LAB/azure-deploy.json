@@ -78,7 +78,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-Sentinel/azuredeploy-sentinel.json",
+          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-Sentinel/azuredeploy-sentinel.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -106,7 +106,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/azuredeploy-ad.json",
+          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/azuredeploy-ad.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -173,7 +173,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AMA/azuredeploy-ama.json",
+          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AMA/azuredeploy-ama.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -190,7 +190,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-Linux/azuredeploy-Linux.json",
+          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-Linux/azuredeploy-Linux.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -241,7 +241,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-DCRs/azuredeploy-DCRs.json",
+          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-DCRs/azuredeploy-DCRs.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -265,7 +265,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-NetPeering/azuredeploy-netpeering.json",
+          "uri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-NetPeering/azuredeploy-netpeering.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {

@@ -26,7 +26,7 @@ configuration Deploy-SCCM {
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     $domUser    = "${DomainNetbiosName}\$($AdminCreds.UserName)"
     $domPass    = $AdminCreds.GetNetworkCredential().Password
-    $installUrl = 'https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Install-SCCM.ps1'
+    $installUrl = 'https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/DesiredSateConfig/Install-SCCM.ps1'
 
     # Build the SetScript with the run-as user/password baked in at compile time (no $using: on 5.1).
     $setScriptText = @"
