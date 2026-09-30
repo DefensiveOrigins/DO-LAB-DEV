@@ -48,6 +48,26 @@
             "Password": "Buggy!112233",
             "Identity": "Users",
             "UserContainer": "DomainUsers"
+          },
+          {
+            "FirstName": "SCCM",
+            "LastName": "NetworkAccess",
+            "SamAccountName": "svc_sccmnaa",
+            "Department": "IT Support",
+            "JobTitle": "SCCM Network Access Account",
+            "Password": "Config#Mgr2026",
+            "Identity": "Users",
+            "UserContainer": "DomainUsers"
+          },
+          {
+            "FirstName": "Lab",
+            "LastName": "LowPriv",
+            "SamAccountName": "lablowpriv",
+            "Department": "Sales",
+            "JobTitle": "Standard User",
+            "Password": "Standard#User2026",
+            "Identity": "Users",
+            "UserContainer": "DomainUsers"
           }
         ]
       }
@@ -135,10 +155,23 @@
             "Standard_D2s_v3",
             "Standard_D2s_v4",
             "Standard_D2s_v6",
-            "Standard_D2s_v7"
+            "Standard_D2s_v7",
+            "Standard_D4s_v6"
         ],
       "metadata": {
         "description": "Size of the virtual machine. Reference: https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general"
+      }
+    },
+    "memberServerVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D4s_v6",
+        "allowedValues": [
+            "Standard_D2s_v6",
+            "Standard_D4s_v6",
+            "Standard_D8s_v6"
+        ],
+      "metadata": {
+        "description": "Size of the member server (SRV01). It hosts the SCCM primary site (SQL + ADK + MP/DP/SMS Provider) on top of ADCS, so it needs more memory than the other VMs. Default Standard_D4s_v6 = 4 vCPU / 16 GB. The other VMs use vmSize."
       }
     },
     "identityType": {
@@ -237,36 +270,36 @@
     ],
 
     // Nested Templates
-    "updateDNSServerScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/templates/vnet-dns-server.json",
-    "sysmonInstallTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/templates/sysmonInstall.json",
-    "createADTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/templates/createADForest.json",
-    "joinDomainTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/templates/joinDomain.json",
-    "deployADCSTemplateURI": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/templates/deployADCS.json",
-    "addsshkeyscripttempateuri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/templates/AddSSHKey.json",
+    "updateDNSServerScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/vnet-dns-server.json",
+    "sysmonInstallTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/sysmonInstall.json",
+    "createADTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/createADForest.json",
+    "joinDomainTemplateUri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/joinDomain.json",
+    "deployADCSTemplateURI": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/deployADCS.json",
+    "addsshkeyscripttempateuri": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/templates/AddSSHKey.json",
 
     // Custom Scripts
-    "initialSettingsScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Set-Initial-Settings.ps1",
-    "prepareBoxScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Prepare-Box.ps1",
-    "setSecurityAuditingScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Enable-WinAuditCategories.ps1",
-    "setPowerShellLogging": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Enable-PowerShell-Logging.ps1",
+    "initialSettingsScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Set-Initial-Settings.ps1",
+    "prepareBoxScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Prepare-Box.ps1",
+    "setSecurityAuditingScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Enable-WinAuditCategories.ps1",
+    "setPowerShellLogging": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Enable-PowerShell-Logging.ps1",
     "saclModule": "https://raw.githubusercontent.com/OTRF/Set-AuditRule/master/Set-AuditRule.ps1",
-    "setSACLScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Set-SACLs.ps1",
-    "setWallPaperScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Set-WallPaper.ps1",
-    "setServerManagerScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Set-ServerManager.ps1",
-    "setEdgeFRUscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Set-EdgeFRU.ps1",
-    "setChromeFRUscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Set-ChromeFRU.ps1",
-    "addshortcutsscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Add-Shortcuts.ps1",
-    "addsbrowsersscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Add-Browsers.ps1",
-    "enableAutoEnrollScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Enable-AutoEnrollment.ps1",
+    "setSACLScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Set-SACLs.ps1",
+    "setWallPaperScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Set-WallPaper.ps1",
+    "setServerManagerScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Set-ServerManager.ps1",
+    "setEdgeFRUscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Set-EdgeFRU.ps1",
+    "setChromeFRUscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Set-ChromeFRU.ps1",
+    "addshortcutsscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Add-Shortcuts.ps1",
+    "addsbrowsersscript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Add-Browsers.ps1",
+    "enableAutoEnrollScript": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Enable-AutoEnrollment.ps1",
 
 
     // Powershell DSC Scripts
-    "dscModules": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/test/Deploy-AD/scripts/Install-DSC-Modules.ps1",
-    "createADForestZip": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/test/Deploy-AD/DesiredSateConfig/Create-AD.zip",
-    "joinDomainScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/test/Deploy-AD/DesiredSateConfig/Join-Domain.zip",
-    "installSysmonScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/test/Deploy-AD/DesiredSateConfig/Install-Sysmon.zip",
-    "deployADCSScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/test/Deploy-AD/DesiredSateConfig/Deploy-ADCS.zip",
-    "addsshscript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/test/Deploy-AD/DesiredSateConfig/Add-SSH-key.zip",
+    "dscModules": "https://raw.githubusercontent.com/DefensiveOrigins/DO-LAB-DEV/sccm-sccmhunter/Deploy-AD/scripts/Install-DSC-Modules.ps1",
+    "createADForestZip": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Create-AD.zip",
+    "joinDomainScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Join-Domain.zip",
+    "installSysmonScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Install-Sysmon.zip",
+    "deployADCSScript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Deploy-ADCS.zip",
+    "addsshscript": "https://github.com/DefensiveOrigins/DO-LAB-DEV/raw/sccm-sccmhunter/Deploy-AD/DesiredSateConfig/Add-SSH-key.zip",
 
     // Initial Setup Scripts
     "initialSetUpScripts": [
@@ -329,7 +362,7 @@
         "os": "windows",
         "subnetref": "[variables('subnetRef')]",
         "ipAddress": "[concat(variables('vmPrivateIPAddresPrefix'),'10')]",
-        "vmSize": "[parameters('vmSize')]",
+        "vmSize": "[parameters('memberServerVmSize')]",
         "publisher": "MicrosoftWindowsServer",
         "offer": "[parameters('windowsServerOffer')]",
         "sku": "[parameters('windowsServerSKU')]",
@@ -945,7 +978,7 @@
       }
     },
     {
-      "comments": "SSH key onto SRV01 for parity with DC01/WS05. Runs after SRV01-deployADCS because both add the same-named PowerShellDSC extension to the VM.",
+      "comments": "SSH key onto SRV01 for parity with DC01/WS05. Runs after SRV01-deployADCS because both reconfigure the same-named PowerShellDSC extension on the VM and must be serialized. NOTE: SCCM is no longer installed by the automatic deploy; add the SCCM primary site to a deployed lab by running Deploy-AD/DesiredSateConfig/Deploy-SCCM-Standalone.ps1 on SRV01 as DOAZLab\\DOAdmin.",
       "name": "SRV01-AddSSHKey",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
