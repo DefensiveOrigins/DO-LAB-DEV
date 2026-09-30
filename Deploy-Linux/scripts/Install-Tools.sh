@@ -22,7 +22,7 @@ apt-get install python3 -y
 echo "Time: $(date). ---APT: virtualenv Install ---" >> /etc/DOAZLAB/DOAZLABLog
 apt-get install virtualenv -y
 echo "Time: $(date). ---APT: python3 tools, dev, build-essentials, smbclient Install ---" >> /etc/DOAZLAB/DOAZLABLog
-apt-get install python3-distutils python3-virtualenv libssl-dev libffi-dev python-dev-is-python3 build-essential smbclient libpcap-dev apt-transport-https ldap-utils -y
+apt-get install python3-virtualenv libssl-dev libffi-dev python-dev-is-python3 build-essential smbclient libpcap-dev apt-transport-https ldap-utils -y
 echo "Time: $(date). ---APT: proxychains4 ---" >> /etc/DOAZLAB/DOAZLABLog
 apt-get install proxychains4 -y
 echo "Time: $(date). ---APT: nmap Install ---" >> /etc/DOAZLAB/DOAZLABLog
