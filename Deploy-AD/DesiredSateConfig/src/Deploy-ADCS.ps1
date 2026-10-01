@@ -73,6 +73,15 @@ configuration Deploy-ADCS {
 		# Add web enrollment
                 Install-AdcsWebEnrollment -Force
 
+                # Bind web enrollment to HTTPS on 443 as well. Without a 443 listener the
+                # inbound SYN is dropped, so Certipy's web-enrollment check (certipy find)
+                # hangs on its HTTPS probe and reports a timeout even though HTTP (80)
+                # enrollment works. A self-signed cert is sufficient for the lab.
+                Import-Module WebAdministration
+                $webCert = New-SelfSignedCertificate -DnsName 'SRV01.doazlab.com' -CertStoreLocation 'Cert:\LocalMachine\My'
+                New-WebBinding -Name 'Default Web Site' -Protocol https -Port 443 -IPAddress '*' -ErrorAction SilentlyContinue
+                New-Item -Path "IIS:\SslBindings\0.0.0.0!443" -Value $webCert -ErrorAction SilentlyContinue
+
 
                 #Add Default templates
                 Add-CATemplate "ClientAuth" -Force
