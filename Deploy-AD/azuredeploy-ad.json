@@ -48,6 +48,26 @@
             "Password": "Buggy!112233",
             "Identity": "Users",
             "UserContainer": "DomainUsers"
+          },
+          {
+            "FirstName": "SCCM",
+            "LastName": "NetworkAccess",
+            "SamAccountName": "svc_sccmnaa",
+            "Department": "IT Support",
+            "JobTitle": "SCCM Network Access Account",
+            "Password": "Config#Mgr2026",
+            "Identity": "Users",
+            "UserContainer": "DomainUsers"
+          },
+          {
+            "FirstName": "Lab",
+            "LastName": "LowPriv",
+            "SamAccountName": "lablowpriv",
+            "Department": "Sales",
+            "JobTitle": "Standard User",
+            "Password": "Standard#User2026",
+            "Identity": "Users",
+            "UserContainer": "DomainUsers"
           }
         ]
       }
@@ -135,10 +155,23 @@
             "Standard_D2s_v3",
             "Standard_D2s_v4",
             "Standard_D2s_v6",
-            "Standard_D2s_v7"
+            "Standard_D2s_v7",
+            "Standard_D4s_v6"
         ],
       "metadata": {
         "description": "Size of the virtual machine. Reference: https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general"
+      }
+    },
+    "memberServerVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D4s_v6",
+        "allowedValues": [
+            "Standard_D2s_v6",
+            "Standard_D4s_v6",
+            "Standard_D8s_v6"
+        ],
+      "metadata": {
+        "description": "Size of the member server (SRV01). It hosts the SCCM primary site (SQL + ADK + MP/DP/SMS Provider) on top of ADCS, so it needs more memory than the other VMs. Default Standard_D4s_v6 = 4 vCPU / 16 GB. The other VMs use vmSize."
       }
     },
     "identityType": {
@@ -329,7 +362,7 @@
         "os": "windows",
         "subnetref": "[variables('subnetRef')]",
         "ipAddress": "[concat(variables('vmPrivateIPAddresPrefix'),'10')]",
-        "vmSize": "[parameters('vmSize')]",
+        "vmSize": "[parameters('memberServerVmSize')]",
         "publisher": "MicrosoftWindowsServer",
         "offer": "[parameters('windowsServerOffer')]",
         "sku": "[parameters('windowsServerSKU')]",
@@ -945,7 +978,7 @@
       }
     },
     {
-      "comments": "SSH key onto SRV01 for parity with DC01/WS05. Runs after SRV01-deployADCS because both add the same-named PowerShellDSC extension to the VM.",
+      "comments": "SSH key onto SRV01 for parity with DC01/WS05. Runs after SRV01-deployADCS because both reconfigure the same-named PowerShellDSC extension on the VM and must be serialized. NOTE: SCCM is no longer installed by the automatic deploy; add the SCCM primary site to a deployed lab by running Deploy-AD/DesiredSateConfig/Deploy-SCCM-Standalone.ps1 on SRV01 as DOAZLab\\DOAdmin.",
       "name": "SRV01-AddSSHKey",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
